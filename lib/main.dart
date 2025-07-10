@@ -33,7 +33,33 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   static const Icon succeeded = Icon(Icons.check, color: Colors.green);
   static const Icon failed = Icon(Icons.close, color: Colors.red);
+
+  static const List<(String, bool)> questions = [
+    ('You can lead a cow down stairs but not up stairs.', false),
+    ('Approximately one quarter of human bones are in the feet.', true),
+    ('A slug\'s blood is green.', false),
+  ];
+
   final List<Icon> scores = [];
+  
+  int questionNumber = 0;
+  bool finished = false;
+
+  void getAnswer(bool choice, bool answer) {
+    setState(() {
+      if (finished) {
+        return;
+      }
+
+      scores.add(choice == answer ? succeeded : failed);
+      
+      if (questionNumber < questions.length - 1) {
+        questionNumber++;
+      } else {
+        finished = true;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +73,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: const EdgeInsets.all(10),
             child: Center(
               child: Text(
-                'This is where the question tex will go',
+                finished ? 'Final' : questions[questionNumber].$1,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 25, color: Colors.white),
               ),
@@ -57,15 +83,24 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: BooleanButton('True', Colors.green, () {}),
+            child: BooleanButton(
+              'True',
+              Colors.green,
+              () => getAnswer(true, questions[questionNumber].$2),
+            ),
           ),
         ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: BooleanButton('False', Colors.red, () {}),
+            child: BooleanButton(
+              'False',
+              Colors.red,
+              () => getAnswer(false, questions[questionNumber].$2),
+            ),
           ),
         ),
+        Row(children: scores),
       ],
     );
   }
@@ -82,7 +117,7 @@ class BooleanButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(color)),
-      onPressed: call(),
+      onPressed: () => call(),
       child: Text(
         text,
         style: const TextStyle(color: Colors.white, fontSize: 20),
