@@ -31,6 +31,10 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+  static const Icon succeeded = Icon(Icons.check, color: Colors.green);
+  static const Icon failed = Icon(Icons.close, color: Colors.red);
+  final List<Icon> scores = [];
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -53,34 +57,36 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: ElevatedButton(
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.green),
-              ),
-              onPressed: () {},
-              child: const Text(
-                'True',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
+            child: BooleanButton('True', Colors.green, () {}),
           ),
         ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: ElevatedButton(
-              style: const ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.red),
-              ),
-              onPressed: () {},
-              child: const Text(
-                'False',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
-            ),
+            child: BooleanButton('False', Colors.red, () {}),
           ),
         ),
       ],
+    );
+  }
+}
+
+class BooleanButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final Function call;
+
+  const BooleanButton(this.text, this.color, this.call, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(color)),
+      onPressed: call(),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.white, fontSize: 20),
+      ),
     );
   }
 }
