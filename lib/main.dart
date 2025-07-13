@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:quizzler/boolean_button.dart';
+import 'package:quizzler/question.dart';
+import 'package:quizzler/question_list.dart';
 
 void main() => runApp(const Quizzler());
 
@@ -34,14 +37,14 @@ class _QuizPageState extends State<QuizPage> {
   static const Icon succeeded = Icon(Icons.check, color: Colors.green);
   static const Icon failed = Icon(Icons.close, color: Colors.red);
 
-  static const List<(String, bool)> questions = [
-    ('You can lead a cow down stairs but not up stairs.', false),
-    ('Approximately one quarter of human bones are in the feet.', true),
-    ('A slug\'s blood is green.', false),
-  ];
+  static const QuestionList quiz = QuestionList([
+    Question('You can lead a cow down stairs but not up stairs.', false),
+    Question('Approximately one quarter of human bones are in the feet.', true),
+    Question('A slug\'s blood is green.', false),
+  ]);
 
   final List<Icon> scores = [];
-  
+
   int questionNumber = 0;
   bool finished = false;
 
@@ -52,8 +55,8 @@ class _QuizPageState extends State<QuizPage> {
       }
 
       scores.add(choice == answer ? succeeded : failed);
-      
-      if (questionNumber < questions.length - 1) {
+
+      if (questionNumber < quiz.questions.length - 1) {
         questionNumber++;
       } else {
         finished = true;
@@ -63,6 +66,9 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
+    String mainText = finished
+        ? 'Final: ${scores.where((el) => el == succeeded).length}'
+        : quiz.questions[questionNumber].text;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -73,7 +79,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: const EdgeInsets.all(10),
             child: Center(
               child: Text(
-                finished ? 'Final' : questions[questionNumber].$1,
+                mainText,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 25, color: Colors.white),
               ),
@@ -86,7 +92,9 @@ class _QuizPageState extends State<QuizPage> {
             child: BooleanButton(
               'True',
               Colors.green,
-              () => getAnswer(true, questions[questionNumber].$2),
+              () => finished
+                  ? null
+                  : getAnswer(true, quiz.questions[questionNumber].answer),
             ),
           ),
         ),
@@ -96,32 +104,14 @@ class _QuizPageState extends State<QuizPage> {
             child: BooleanButton(
               'False',
               Colors.red,
-              () => getAnswer(false, questions[questionNumber].$2),
+              () => finished
+                  ? null
+                  : getAnswer(false, quiz.questions[questionNumber].answer),
             ),
           ),
         ),
         Row(children: scores),
       ],
-    );
-  }
-}
-
-class BooleanButton extends StatelessWidget {
-  final String text;
-  final Color color;
-  final Function call;
-
-  const BooleanButton(this.text, this.color, this.call, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(color)),
-      onPressed: () => call(),
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white, fontSize: 20),
-      ),
     );
   }
 }
