@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quizzler/boolean_button.dart';
 import 'package:quizzler/question.dart';
 import 'package:quizzler/question_list.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() => runApp(const Quizzler());
 
@@ -34,41 +35,69 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  static const Icon succeeded = Icon(Icons.check, color: Colors.green);
-  static const Icon failed = Icon(Icons.close, color: Colors.red);
+  static const Icon _succeeded = Icon(Icons.check, color: Colors.green);
+  static const Icon _failed = Icon(Icons.close, color: Colors.red);
 
-  static const QuestionList quiz = QuestionList([
+  static const QuestionList _quiz = QuestionList([
     Question('You can lead a cow down stairs but not up stairs.', false),
     Question('Approximately one quarter of human bones are in the feet.', true),
     Question('A slug\'s blood is green.', false),
   ]);
 
-  final List<Icon> scores = [];
+  final List<Icon> _scores = [];
+  int get scoresNum => _scores.where((el) => el == _succeeded).length;
 
-  int questionNumber = 0;
-  bool finished = false;
+  int _questionNumber = 0;
+  bool _finished = false;
 
   void getAnswer(bool choice, bool answer) {
     setState(() {
-      if (finished) {
+      if (_finished) {
+        getFinalAlert();
         return;
       }
 
-      scores.add(choice == answer ? succeeded : failed);
+      _scores.add(choice == answer ? _succeeded : _failed);
 
-      if (questionNumber < quiz.questions.length - 1) {
-        questionNumber++;
+      if (_questionNumber < _quiz.questions.length - 1) {
+        _questionNumber++;
       } else {
-        finished = true;
+        _finished = true;
+      }
+
+      if (_finished) {
+        getFinalAlert();
       }
     });
   }
 
+  void getFinalAlert() {
+    Alert(
+      context: context,
+      title: "Scores: $scoresNum",
+      desc: "You finished! Do you wanna repeat?",
+      buttons: [
+        DialogButton(
+          child: Text('Start Again'),
+          onPressed: () {
+            setState(() {
+              _finished = false;
+              _questionNumber = 0;
+              _scores.clear();
+            });
+
+            Navigator.pop(context);
+          },
+        ),
+      ],
+    ).show();
+  }
+
   @override
   Widget build(BuildContext context) {
-    String mainText = finished
-        ? 'Final: ${scores.where((el) => el == succeeded).length}'
-        : quiz.questions[questionNumber].text;
+    String mainText = _finished
+        ? 'Final: $scoresNum'
+        : _quiz.questions[_questionNumber].text;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -92,9 +121,7 @@ class _QuizPageState extends State<QuizPage> {
             child: BooleanButton(
               'True',
               Colors.green,
-              () => finished
-                  ? null
-                  : getAnswer(true, quiz.questions[questionNumber].answer),
+              () => getAnswer(true, _quiz.questions[_questionNumber].answer),
             ),
           ),
         ),
@@ -104,13 +131,11 @@ class _QuizPageState extends State<QuizPage> {
             child: BooleanButton(
               'False',
               Colors.red,
-              () => finished
-                  ? null
-                  : getAnswer(false, quiz.questions[questionNumber].answer),
+              () => getAnswer(false, _quiz.questions[_questionNumber].answer),
             ),
           ),
         ),
-        Row(children: scores),
+        Row(children: _scores),
       ],
     );
   }
